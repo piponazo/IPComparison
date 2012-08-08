@@ -38,7 +38,6 @@ SET(CMAKE_LIB_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/lib CACHE PATH "Output di
 # ----------------------------------------------------------------------------
 OPTION(WARNINGS_ARE_ERRORS        "Treat warnings as errors" 									                  ON)
 OPTION(WARNINGS_ANSI_ISO          "Issue all the mandatory diagnostics Listed in C standard" 	  ON)
-OPTION(ENABLE_PROFILING           "Enable profiling in Valgrind (Add flags: -g -fno_inline)"    OFF)
 
 # ----------------------------------------------------------------------------
 #   Find Dependencies
