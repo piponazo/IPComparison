@@ -14,6 +14,9 @@ source community.
 
  - CMake is used for configuring the project.
 
+ - argtable2 library. This library is used in some programs for parsing the
+ arguments passed to the programs.
+
 Notes
 =====
 
