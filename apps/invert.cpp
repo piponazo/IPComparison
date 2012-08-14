@@ -5,7 +5,7 @@
  *
  *  @internal
  *    Created  08/08/12
- *   Revision 08/08/12 - 18:39
+ *   Revision 08/14/12 - 09:17:21
  *   Compiler  gcc/g++
  *    Company  
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
@@ -17,9 +17,10 @@
 #include <argtable2.h>
 #include <iostream>
 #include <cstdlib>
-#include <emmintrin.h>
+//#include <emmintrin.h>
+#include <xmmintrin.h>
 
-#include <opencv2/core/core.hpp> // It has a typedef for uchar
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 using namespace std;
@@ -61,7 +62,6 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  const int64 ticksSecond = cv::getTickFrequency();
   cv::Mat iImg, imgDstCPU, imgDstCV, imgDstMMX, imgDstSSE;
   iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
   imgDstCPU.create(iImg.rows, iImg.cols, iImg.type());
@@ -69,10 +69,9 @@ int main(int argc, char **argv)
   imgDstMMX.create(iImg.rows, iImg.cols, iImg.type());
   imgDstSSE.create(iImg.rows, iImg.cols, iImg.type());
 
+  const int64 ticksSecond = cv::getTickFrequency();
   const int nPixels=iImg.cols*iImg.rows*iImg.channels();
   double t=0;
-  cout << "Image size: " << iImg.cols << "x" << iImg.rows << "x"
-       << iImg.channels()<< " = " << nPixels << endl;
 
   t = (double)cv::getTickCount();
   cv::bitwise_not(iImg, imgDstCV);
