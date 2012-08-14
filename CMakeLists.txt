@@ -37,7 +37,7 @@ SET(CMAKE_LIB_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/lib CACHE PATH "Output di
 #   force some variables that could be defined in the command line to be written to cache
 # ----------------------------------------------------------------------------
 OPTION(WARNINGS_ARE_ERRORS        "Treat warnings as errors" 									                  ON)
-OPTION(WARNINGS_ANSI_ISO          "Issue all the mandatory diagnostics Listed in C standard" 	  ON)
+OPTION(WARNINGS_ANSI_ISO          "Issue all the mandatory diagnostics Listed in C standard" 	  OFF)
 
 # ----------------------------------------------------------------------------
 #   Find Dependencies
@@ -48,9 +48,27 @@ IF (WIN32)
     MESSAGE(FATAL_ERROR "Default value for ARGTABLE_ROOT in win32 doesn't exist [c:\3rdlibs]")
   ENDIF()
 ENDIF()
+SET(CUDA_SDK_ROOT_DIR $ENV{HOME}/NVIDIA_GPU_Computing_SDK/)
 
 FIND_LIBRARY(ARGTABLE argtable2 PATHS ${ARGTABLE_ROOT}/lib)
 FIND_PACKAGE(OpenCV)
+FIND_PACKAGE(CUDA 4.2 REQUIRED)
+
+FIND_PATH(CUDA_CUT_INCLUDE_DIR cutil.h
+ PATHS ${CUDA_SDK_ROOT_DIR}
+ PATH_SUFFIXES "C/common/inc"
+ DOC "Location of cutil.h"
+ NO_DEFAULT_PATH
+ )
+FIND_LIBRARY(CUDA_CUT_LIBRARY
+ NAMES cutil_i386
+ PATHS ${CUDA_SDK_ROOT_DIR}
+ PATH_SUFFIXES "C/lib"
+ DOC "Location of cutil library"
+ NO_DEFAULT_PATH
+ )
+MARK_AS_ADVANCED(CUDA_CUT_INCLUDE_DIR)
+MARK_AS_ADVANCED(CUDA_CUT_LIBRARY)
 
 IF(ARGTABLE-NOTFOUND)
   MESSAGE(FATAL_ERROR "argtable2 library didn't found")
@@ -59,6 +77,14 @@ ENDIF()
 IF (${OpenCV_VERSION} VERSION_LESS 2.3.0)
 	MESSAGE(FATAL_ERROR "OpenCV version is not compatible : ${OpenCV_VERSION}")
 ENDIF()
+
+IF (${CUDA_CUT_INCLUDE_DIR} STREQUAL CUDA_CUT_INCLUDE_DIR-NOTFOUND)
+  MESSAGE(FATAL_ERROR "cutil.h was not found")
+ENDIF()
+IF (${CUDA_CUT_LIBRARY} STREQUAL CUDA_CUT_LIBRARY-NOTFOUND)
+  MESSAGE(FATAL_ERROR "cutil library was not found")
+ENDIF()
+
 
 # ----------------------------------------------------------------------------
 #   Compiler options
