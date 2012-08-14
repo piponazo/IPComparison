@@ -5,7 +5,7 @@
  *
  *  @internal
  *    Created  08/08/12
- *   Revision 08/14/12 - 10:00:28
+ *   Revision 08/14/12 - 16:39:42
  *   Compiler  gcc/g++
  *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
@@ -90,12 +90,7 @@ int main(int argc, char **argv)
   if (show->count==1)
   {
     // Create output image and copy data from device to it
-    cv::Mat oImg;
-    if (iImg.channels()==1)
-      oImg.create(iImg.rows, iImg.cols, CV_8UC1);
-    else
-      oImg.create(iImg.rows, iImg.cols, CV_8UC3);
-
+    cv::Mat oImg(iImg.rows, iImg.cols, iImg.type());
     CUDA_SAFE_CALL(cudaMemcpy2D(oImg.data, oImg.step1(), devMemI, step,
       iImg.cols*iImg.channels(), iImg.rows, cudaMemcpyDeviceToHost));
 

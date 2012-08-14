@@ -6,7 +6,7 @@
  *
  *  @internal
  *    Created  13/08/12
- *   Revision 08/14/12 - 09:58:21
+ *   Revision 08/14/12 - 13:34:21
  *   Compiler  gcc/g++
  *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
@@ -55,8 +55,7 @@ int main(int argc, char **argv)
   CUDA_SAFE_CALL(cudaSetDevice(0));
   
   // Read input image
-  cv::Mat iImg;
-  iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
+  cv::Mat iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
   unsigned int channels = iImg.channels();
   unsigned char *devMem;
 

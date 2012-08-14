@@ -5,7 +5,7 @@
  *
  *  @internal
  *    Created  08/08/12
- *   Revision 08/14/12 - 09:55:58
+ *   Revision 08/14/12 - 12:19:35
  *   Compiler  gcc/g++
  *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
@@ -127,19 +127,11 @@ void invertImageMMX(const uchar * __restrict__ src,
   const int nLoop = pixels/8;
   __m64* pIn = (__m64*) src;          // input pointer
   __m64* pOut = (__m64*) dst;         // output pointer
-  __m64 tmp;                          // work variable
   _mm_empty();                        // Empties the multimedia state
   __m64 n1 = _mm_set_pi32(~0, ~0);    // Set all bits to 1 (each pixel 255)
 
-  for (i = 0; i < nLoop; ++i)
-  {
-    tmp = _mm_subs_pu8 (n1 , *pIn);   // Unsigned subtraction with saturation.
-                                      // tmp = n1 - *pIn  for each byte.
-                                      
-    *pOut = tmp;                      // Store result
-    pIn++;                            // next 8 pixels
-    pOut++;
-  }
+  for (i = 0; i < nLoop; ++i, pIn++, pOut++)
+    *pOut= _mm_subs_pu8 (n1, *pIn);   // Unsigned subtraction with saturation
 
   _mm_empty();                        // Empties the multimedia state
 }
@@ -152,19 +144,11 @@ void invertImageSSE(const uchar * __restrict__ src,
   const int nLoop = pixels/16;
   __m128i* pIn = (__m128i*) src;      // input pointer
   __m128i* pOut = (__m128i*) dst;     // output pointer
-  __m128i tmp;                        // work variable
   _mm_empty();                        // Empties the multimedia state
   __m128i n1 = _mm_set1_epi32(~0);    // Set all bits to 1 (each pixel 255)
 
-  for (i = 0; i < nLoop; ++i)
-  {
-    tmp = _mm_subs_epi8 (n1 , *pIn);  // Unsigned subtraction with saturation.
-                                      // tmp = n1 - *pIn  for each byte
-                                      
-    *pOut = tmp;                      // Store result
-    pIn++;                            // next 16 pixels
-    pOut++;
-  }
+  for (i = 0; i < nLoop; ++i, pIn++, pOut++)
+    *pOut = _mm_subs_epi8 (n1, *pIn); // Unsigned subtraction with saturation.
 
   _mm_empty();                        // Empties the multimedia state
 }
