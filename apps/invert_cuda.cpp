@@ -6,9 +6,9 @@
  *
  *  @internal
  *    Created  13/08/12
- *   Revision 08/14/12 - 09:16:33
+ *   Revision 08/14/12 - 09:58:21
  *   Compiler  gcc/g++
- *    Company  
+ *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
  *
  * This source code is released for free distribution under the terms of the
@@ -36,9 +36,7 @@ void *argtable[] = {path , show, h, e};
 
 int main(int argc, char **argv)
 {
-  /////////////////////////////////////////////////////////
   // Read arguments
-  /////////////////////////////////////////////////////////
   int nerrors = arg_parse(argc, argv, argtable);
   if (h->count)
   {
@@ -56,19 +54,24 @@ int main(int argc, char **argv)
 
   CUDA_SAFE_CALL(cudaSetDevice(0));
   
+  // Read input image
   cv::Mat iImg;
   iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
   unsigned int channels = iImg.channels();
   unsigned char *devMem;
 
+  // Allocate device memory and copy input data to it
   CUDA_SAFE_CALL(cudaMalloc(&devMem, iImg.total()*channels));
   CUDA_SAFE_CALL(cudaMemcpy(devMem, iImg.data, iImg.total()*channels,
     cudaMemcpyHostToDevice) );
 
+  // Call the CUDA wrapper
   invert(iImg.cols, iImg.rows, channels, devMem);
 
+  // Show image if desired
   if (show->count)
   {
+    // We have to copy from device memory to host image
     cv::Mat oImg(iImg.rows, iImg.cols, iImg.type());
     CUDA_SAFE_CALL(cudaMemcpy(oImg.data, devMem, iImg.total()*channels,
       cudaMemcpyDeviceToHost) );
@@ -79,7 +82,7 @@ int main(int argc, char **argv)
   }
 
   CUDA_SAFE_CALL(cudaFree(devMem));
-  cudaDeviceReset();
+  CUDA_SAFE_CALL(cudaDeviceReset());
 
   return EXIT_SUCCESS;
 }

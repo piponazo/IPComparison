@@ -5,8 +5,9 @@
  *
  *  @internal
  *    Created  08/08/12
- *   Revision 08/14/12 - 09:17:49
+ *   Revision 08/14/12 - 10:00:28
  *   Compiler  gcc/g++
+ *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
  *
  * This source code is released for free distribution under the terms of the
@@ -33,9 +34,7 @@ void *argtable[] = {path , show, h, e};
 
 int main(int argc, char **argv)
 {
-  /////////////////////////////////////////////////////////
   // Read arguments
-  /////////////////////////////////////////////////////////
   int nerrors = arg_parse(argc, argv, argtable);
   if (h->count)
   {
@@ -51,9 +50,11 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  // Read input image
   cv::Mat iImg;
   iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
 
+  // Allocate device memory (Using NPP functions)
   int step;
   Npp8u *devMemI=0;
   
@@ -67,10 +68,12 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
+  // Copy input data to device memory
   assert (devMemI != 0);
   CUDA_SAFE_CALL(cudaMemcpy2D(devMemI, step, iImg.data, iImg.step1(),
     iImg.cols*iImg.channels(), iImg.rows, cudaMemcpyHostToDevice));
 
+  // Call NPP function
   NppiSize size;
   size.width = iImg.cols;
   size.height= iImg.rows;
@@ -83,8 +86,10 @@ int main(int argc, char **argv)
   t = ((double)cv::getTickCount() - t)/cv::getTickFrequency();
   printf("Time: %f secs\n", t);
 
+  // Show image if desired
   if (show->count==1)
   {
+    // Create output image and copy data from device to it
     cv::Mat oImg;
     if (iImg.channels()==1)
       oImg.create(iImg.rows, iImg.cols, CV_8UC1);

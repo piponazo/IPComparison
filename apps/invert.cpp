@@ -5,9 +5,9 @@
  *
  *  @internal
  *    Created  08/08/12
- *   Revision 08/14/12 - 09:17:21
+ *   Revision 08/14/12 - 09:55:58
  *   Compiler  gcc/g++
- *    Company  
+ *        Web  http://plagatux.es
  *  Copyright  Copyright (c) 2012, Luis Diaz Mas
  *
  * This source code is released for free distribution under the terms of the
@@ -44,9 +44,7 @@ void invertImageSSE(const uchar * __restrict__ src,
 
 int main(int argc, char **argv)
 {
-  /////////////////////////////////////////////////////////
-  // Read arguments
-  /////////////////////////////////////////////////////////
+  // Read arguments with argtable2
   int nerrors = arg_parse(argc, argv, argtable);
   if (h->count)
   {
@@ -62,6 +60,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
+  // Create input and output images
   cv::Mat iImg, imgDstCPU, imgDstCV, imgDstMMX, imgDstSSE;
   iImg = cv::imread(path->sval[0], CV_LOAD_IMAGE_ANYCOLOR);
   imgDstCPU.create(iImg.rows, iImg.cols, iImg.type());
@@ -73,26 +72,31 @@ int main(int argc, char **argv)
   const int nPixels=iImg.cols*iImg.rows*iImg.channels();
   double t=0;
 
+  // OpenCV Version
   t = (double)cv::getTickCount();
   cv::bitwise_not(iImg, imgDstCV);
   t = ((double)cv::getTickCount() - t)/ticksSecond;
-  cout << "OCV Avg/total: " << t << endl;
+  cout << "OCV time: " << t << endl;
 
+  // CPU Version
   t = (double)cv::getTickCount();
   invertImageCPU(iImg.data, imgDstCPU.data, nPixels);
   t = ((double)cv::getTickCount() - t)/ticksSecond;
-  cout << "CPU Avg/total: " << t << endl;
+  cout << "CPU time: " << t << endl;
 
+  // MMX Version
   t = (double)cv::getTickCount();
   invertImageMMX(iImg.data, imgDstMMX.data, nPixels);
   t = ((double)cv::getTickCount() - t)/ticksSecond;
-  cout << "MMX Avg/total: " << t << endl;
+  cout << "MMX time: " << t << endl;
 
+  // SSE Version
   t = (double)cv::getTickCount();
   invertImageSSE(iImg.data, imgDstSSE.data, nPixels);
   t = ((double)cv::getTickCount() - t)/ticksSecond;
-  cout << "SSE Avg/total: " << t << endl;
+  cout << "SSE time: " << t << endl;
 
+  // Show images if desired
   if (show->count==1)
   {
     cv::imshow("source", iImg);
@@ -102,6 +106,8 @@ int main(int argc, char **argv)
     cv::waitKey(0);
     cv::destroyAllWindows();
   }
+
+  // Memory deallocation (Mats are released automatically)
   arg_freetable(argtable, sizeof(argtable)/sizeof(argtable[0]));
 }
 
@@ -118,20 +124,23 @@ void invertImageMMX(const uchar * __restrict__ src,
 {
   // 8 pixels are processed in one loop
   register int i;
-  int nLoop = pixels/8;
+  const int nLoop = pixels/8;
   __m64* pIn = (__m64*) src;          // input pointer
   __m64* pOut = (__m64*) dst;         // output pointer
   __m64 tmp;                          // work variable
   _mm_empty();                        // Empties the multimedia state
-  __m64 n1 = _mm_set_pi32(~0, ~0);
+  __m64 n1 = _mm_set_pi32(~0, ~0);    // Set all bits to 1 (each pixel 255)
+
   for (i = 0; i < nLoop; ++i)
   {
     tmp = _mm_subs_pu8 (n1 , *pIn);   // Unsigned subtraction with saturation.
                                       // tmp = n1 - *pIn  for each byte.
-    *pOut = tmp;
+                                      
+    *pOut = tmp;                      // Store result
     pIn++;                            // next 8 pixels
     pOut++;
   }
+
   _mm_empty();                        // Empties the multimedia state
 }
 
@@ -140,19 +149,22 @@ void invertImageSSE(const uchar * __restrict__ src,
 {
   // 16 pixels are processed in one loop
   register int i;
-  int nLoop = pixels/16;
+  const int nLoop = pixels/16;
   __m128i* pIn = (__m128i*) src;      // input pointer
   __m128i* pOut = (__m128i*) dst;     // output pointer
   __m128i tmp;                        // work variable
   _mm_empty();                        // Empties the multimedia state
-  __m128i n1 = _mm_set1_epi32(~0);
+  __m128i n1 = _mm_set1_epi32(~0);    // Set all bits to 1 (each pixel 255)
+
   for (i = 0; i < nLoop; ++i)
   {
     tmp = _mm_subs_epi8 (n1 , *pIn);  // Unsigned subtraction with saturation.
                                       // tmp = n1 - *pIn  for each byte
-    *pOut = tmp;
+                                      
+    *pOut = tmp;                      // Store result
     pIn++;                            // next 16 pixels
     pOut++;
   }
+
   _mm_empty();                        // Empties the multimedia state
 }
